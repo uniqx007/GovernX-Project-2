@@ -1,47 +1,63 @@
-# GovernX: Cloud Integration & Data Pipeline
-## 🚀 Overview
+# GovernX: Cloud Integration & Data Pipeline (Week 1)
 
-The `AWSConnector` is designed to actively poll and audit cloud infrastructure to detect misconfigurations and security vulnerabilities. It currently supports extracting configurations from the following AWS services:
-- **EC2:** Detects unencrypted EBS volumes, disabled monitoring, and outdated IMDSv1 instances.
-- **S3:** Detects publicly accessible buckets and unencrypted storage.
-- **RDS:** Detects publicly accessible databases, missing Multi-AZ configurations, and unencrypted instances.
-- **IAM:** Audits user access keys and MFA enforcement.
-- **VPC / Security Groups:** Audits ingress/egress rules for potentially dangerous open ports (e.g., world-open databases).
+This repository contains the foundational **Backend & Cloud Integration Pipeline** for the GovernX NIST CSF 2.0 Compliance Engine. It is responsible for continuously polling cloud environments, extracting security configurations, normalizing the data, and serving it via a REST API to the rest of the application.
 
-## 🛠️ Testing via Native Moto Integration
+## Architecture & Modules
 
-To facilitate testing without requiring actual AWS credentials or incurring cloud costs, the `AWSConnector` has been built with native [Moto](https://github.com/getmoto/moto) mock support.
+The pipeline is composed of four core modules working in tandem:
 
-When initialized, the connector will seamlessly instantiate a local, in-memory AWS environment, generate intentionally vulnerable mock resources, and execute real `boto3` queries against them.
+### 1. `aws_connector.py` (The Extraction Engine)
+Actively polls and audits cloud infrastructure to detect misconfigurations and security vulnerabilities across AWS services (EC2, S3, RDS, IAM, VPC).
+* **Mock Integration:** Seamlessly integrated with `Moto` to automatically spin up a localized mock AWS environment containing intentionally vulnerable resources for safe, cost-free testing. (As issue with real data integration was coming)
+
+### 2. `cloud_poller.py` (The Orchestrator)
+A multi-cloud, multi-region orchestrator that manages the execution of cloud connectors.
+* Handles caching mechanisms, retry logic, and concurrent polling cycles.
+* Designed to easily scale to support Azure and GCP in future sprints.
+
+### 3. `data_normalizer.py` (The Transformer)
+Takes the raw, service-specific output from the cloud connectors and standardizes it into a universal JSON format.
+* Performs data quality validation, normalizes severity levels, and outputs clean structured data (`normalized_findings.json` & `normalized_resources.json`) ready to be mapped to the NIST CSF 2.0 framework.
+
+### 4. `api_endpoints.py` (The API Gateway)
+A modern, asynchronous FastAPI application that exposes the backend capabilities to the Frontend and Data Engineering teams.
+* Triggers on-demand background audits via `POST /api/v1/audit/start`.
+* Serves the normalized findings and statistics via REST endpoints.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-
+Make sure you have the required dependencies installed:
 ```bash
-pip install boto3 moto
+  pip install -r requirements.txt
 ```
 
-### Running the Audit
+### 1. Running the Pipeline Manually
+You can test the entire pipeline end-to-end directly from your terminal:
 
-Simply execute the script to start the mock server, seed the resources, and run the full security audit:
-
+**Run the Poller & Connector:**
 ```bash
-python aws_connector.py
+  python cloud_poller.py
 ```
+*This will execute the mock Moto AWS environment, detect vulnerabilities, and cache the raw results.*
 
-### Output
-
-The audit will complete in seconds and output its findings directly to the console, while also exporting a comprehensive structured JSON report to `aws_audit.json`.
-
-```text
-INFO:botocore.credentials:Found credentials in environment variables.
-INFO:__main__:AWS connector initialized for region: us-east-1 (MOTO ENABLED)
-INFO:__main__:======================================================================
-INFO:__main__:RUNNING FULL AWS SECURITY AUDIT (MOCK BOTO3 ENGINE)
-INFO:__main__:======================================================================
-INFO:__main__:🔍 Auditing EC2 instances...
-INFO:__main__:✅ EC2 audit complete. Found 3 issues.
-INFO:__main__:🔍 Auditing S3 buckets...
-...
-INFO:__main__:Total Findings: 9
-INFO:__main__:Total Resources Scanned: 4
+**Run the Normalizer:**
+```bash
+  python data_normalizer.py
 ```
+*This will ingest the raw audit and export beautifully normalized JSON data.*
+
+### 2. Running the API Server
+To expose the pipeline to the rest of the GovernX ecosystem, start the API server:
+```bash
+  python api_endpoints.py
+```
+Once the server says `GovernX API started`, open your web browser and navigate to the interactive testing interface:
+👉 **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**
+
+From this Swagger UI, you can manually trigger audits and query findings.
+
+
+---

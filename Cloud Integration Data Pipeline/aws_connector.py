@@ -1,6 +1,6 @@
 """
 GovernX: AWS Connector with Mock Data Support
-Works with REAL AWS or MOCK data
+Works with REAL AWS or MOCK data (no account needed)
 """
 
 import boto3
