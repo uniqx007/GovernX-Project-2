@@ -1,6 +1,5 @@
 """
 GovernX: API Endpoints Week 2 - Extended endpoints for compliance & aggregation
-Week 2
 REST API with compliance checks, deduplication, finding aggregation
 """
 
@@ -11,14 +10,27 @@ from datetime import datetime
 import logging
 import json
 
+from contextlib import asynccontextmanager
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ============================================
+# LIFESPAN
+# ============================================
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("GovernX API started")
+    yield
+    logger.info("GovernX API stopped")
+
 # Initialize FastAPI
 app = FastAPI(
-    title="GovernX Cloud Audit API (Week 2)",
+    title="GovernX Cloud Audit API",
     description="API for continuous cloud security auditing and compliance checking",
-    version="0.2.0"
+    version="0.2.0",
+    lifespan=lifespan
 )
 
 # ============================================
@@ -81,7 +93,7 @@ aggregated_findings_cache = {}
 async def health_check() -> Dict[str, Any]:
     """Health check endpoint"""
     return {
-        "service": "GovernX Cloud Audit API (Week 2)",
+        "service": "GovernX Cloud Audit API",
         "status": "running",
         "features": ["Cloud Auditing", "Compliance Checks", "Finding Aggregation"],
         "timestamp": datetime.now().isoformat(),
@@ -375,16 +387,6 @@ async def deduplicate_findings(audit_id: str):
     
     except Exception as e:
         logger.error(f"Finding aggregation failed: {e}")
-
-
-# ============================================
-# STARTUP & SHUTDOWN
-# ============================================
-
-@app.on_event("startup")
-async def startup():
-    """Initialize on startup"""
-    logger.info("✅ GovernX API (Week 2) started")
 
 
 if __name__ == "__main__":
