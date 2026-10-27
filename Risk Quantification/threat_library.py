@@ -1,5 +1,5 @@
 """
-threat_library.py - GovernX Risk Quantification (Week 1)
+threat_library.py - GovernX Risk Quantification (Week 1 & 2)
 
 A THREAT is something bad that could happen (data breach, ransomware...).
 A CONTROL is a protection that reduces the chance/impact of a threat (MFA, encryption...).
@@ -102,6 +102,12 @@ THREATS: Dict[str, Threat] = {
                "Data is destroyed (ransomware, mistake, outage) and cannot be restored.",
                base_aro=0.05, exposure_factor=0.50,
                applicable_asset_types=(AssetType.BACKUP, AssetType.DATABASE, AssetType.STORAGE)),
+        # ---- added in Week 2 ----
+        Threat("T-DATA-EXFIL", "Data exfiltration",
+               "Someone (outsider or insider) copies large amounts of data out of the company unnoticed.",
+               base_aro=0.08, exposure_factor=0.35,
+               applicable_asset_types=(AssetType.DATABASE, AssetType.STORAGE,
+                                       AssetType.SERVER, AssetType.BACKUP)),
     ]
 }
 
@@ -128,6 +134,23 @@ CONTROL_GAPS: Dict[str, ControlGap] = {
                    "PR.IR-01", "T-NETWORK-INTRUSION", 0.70),
         ControlGap("vpc_flow_logs_disabled", "VPC flow logs disabled",
                    "DE.CM-01", "T-UNDETECTED-INTRUSION", 0.40),
+        # ---- added in Week 2 (matches the wider check library Person 1 is building) ----
+        ControlGap("root_account_no_mfa", "Root account has no MFA",
+                   "PR.AA-03", "T-ACCOUNT-TAKEOVER", 0.85),
+        ControlGap("weak_password_policy", "Weak password policy",
+                   "PR.AA-01", "T-ACCOUNT-TAKEOVER", 0.35),
+        ControlGap("access_keys_not_rotated", "Access keys not rotated",
+                   "PR.AA-01", "T-ACCOUNT-TAKEOVER", 0.30),
+        ControlGap("s3_unencrypted", "S3 bucket not encrypted at rest",
+                   "PR.DS-01", "T-DATA-BREACH", 0.50),
+        ControlGap("tls_not_enforced", "Encryption in transit (TLS) not enforced",
+                   "PR.DS-02", "T-DATA-BREACH", 0.40),
+        ControlGap("rds_publicly_accessible", "RDS database reachable from the internet",
+                   "PR.IR-01", "T-DATA-EXPOSURE", 0.80),
+        ControlGap("cloudtrail_disabled", "CloudTrail audit logging disabled",
+                   "DE.CM-03", "T-UNDETECTED-INTRUSION", 0.50),
+        ControlGap("dlp_not_configured", "No data loss prevention (DLP) controls",
+                   "PR.DS-02", "T-DATA-EXFIL", 0.60),
     ]
 }
 
