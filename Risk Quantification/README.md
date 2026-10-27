@@ -74,12 +74,4 @@ Bad findings (unknown type, unknown asset, duplicates) are skipped and listed in
 - **Person 2 (NIST mapping):** NIST IDs live in `CONTROL_GAPS` in `threat_library.py`; please confirm them. `by_function` / `by_category` in the portfolio output use these.
 - **Person 4 (dashboard):** use `PortfolioResult.to_dict()` (`total_ale`, `total_value_at_risk`, `by_function`, `by_category`, `by_asset`), `FinancialImpact.to_dict()` and `BusinessCase.to_dict()`.
 
-## Assumptions to replace before the final demo
-
-All of these are illustrative placeholders:
-
-1. Threat likelihood (ARO), loss per incident and control effectiveness in `threat_library.py`. Replace with figures from IBM Cost of a Data Breach / Verizon DBIR and write the source in each threat's `source` field. Confidence in `risk_translator.py` rises automatically when the source is no longer "illustrative".
-2. Asset values in `asset_registry.py`. Set `owner=` once the business confirms a value.
-3. Control costs in `business_impact_model.py` (`DEFAULT_CONTROL_COSTS`). Replace with real quotes / pricing.
-
-Modelling assumptions: the simulated risks are independent of each other; likelihood uncertainty is lognormal (sigma 0.5, roughly "within a factor of 2"); loss per incident is triangular from 50% to 150% of the estimate; fixes remove incidents with probability equal to their effectiveness.
+ 
