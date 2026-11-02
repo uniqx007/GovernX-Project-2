@@ -1,43 +1,71 @@
-# GovernX Frontend — Weeks 1 & 2
+# GovernX Frontend — Person 4 (Weeks 3 & 4)
 
-React + TypeScript dashboard starter for the GovernX NIST CSF 2.0 compliance project.
+This folder contains an implementation-ready React + TypeScript frontend for Person 4's Week 3 and Week 4 work.
 
-## Included
+## Included deliverables
 
-### Week 1
-- `Dashboard.tsx`: dashboard overview and six NIST functions
-- `NistPillar.tsx`: reusable NIST function cards
-- `ComplianceCard.tsx`: category maturity and gap cards
-- `Header.tsx`, `Footer.tsx`, `Sidebar.tsx`: shared UI components
-- `nist.css`: responsive styling, function colors, and print styles
+### Week 3
+- `ExecutiveDashboard.tsx` — executive overview, financial risk, compliance summary and NIST function maturity.
+- `GovernFunctionView.tsx` — Govern categories, policy/supply-chain governance view and related findings.
+- `ReportGenerator.tsx` — downloadable executive PDF report.
+- `RiskPortfolioView.tsx` — portfolio exposure trend, severity distribution and risk register.
 
-### Week 2
-- `MaturityScore.tsx`: function maturity gauge charts
-- `RiskVisualization.tsx`: financial risk bar chart
-- `GapAnalysis.tsx`: prioritized sample gaps
-- `Reports.tsx`: report summary with CSV export and print action
-- `charts/`: reserved for splitting chart types into dedicated components; the current starter composes its charts in reusable visualization components.
+### Week 4
+- `UI_Polish.tsx` — shared visual-polish wrapper.
+- `Accessibility.tsx` — semantic landmark wrapper.
+- `ResponsiveDesign.tsx` — responsive layout wrapper; breakpoints are in `src/styles/nist.css`.
+- `Performance_Optimization.tsx` — performance wrapper; route-level lazy loading can be added as the app grows.
+- `UserGuide.md` — end-user guide.
+- Shared styling, responsive breakpoints, reduced-motion support and print styles.
 
 ## Run locally
 
-Requires Node.js 18 or newer.
+Requires Node.js 20 or later.
 
 ```bash
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-Open the local URL shown by Vite.
+Open the local URL printed by Vite (normally http://localhost:5173).
 
-## Build
+Create a production build:
 
 ```bash
 npm run build
+npm run preview
 ```
 
-## Notes
+## Backend integration contract
 
-- This project uses illustrative mock data in `src/data/mockDashboard.ts`.
-- No live backend API is connected yet. `src/types/dashboard.ts` contains the frontend data types.
-- The report page exports CSV and uses the browser print dialog. PDF generation and live API integration are not implemented.
-- The PDF workplan specifies the component deliverables, but does not prescribe exact filenames for separate chart components, API services, or data types.
+Set `VITE_API_BASE_URL` in `.env` to the backend API base URL. The frontend requests:
+
+`GET {VITE_API_BASE_URL}/dashboard/data`
+
+The expected response shape is represented by `src/types.ts` and `src/data/mockData.ts`. Until the backend endpoint is available, the UI automatically falls back to illustrative mock data.
+
+Example top-level response fields:
+- `organization`
+- `overallMaturity`
+- `riskExposure`
+- `complianceRate`
+- `openGaps`
+- `functions`
+- `risks`
+- `trend`
+
+Coordinate the final API response schema with Persons 1, 2 and 3 before integration.
+
+## Important data note
+
+The included figures and findings are sample data for frontend development only. They are not real audit results, verified ALE calculations, or compliance assertions. Replace them with backend responses and validate all figures before board use.
+
+## Suggested Git workflow
+
+```bash
+git checkout -b feature/person4-week3-week4-frontend
+git add frontend/
+git commit -m "Add Person 4 frontend deliverables for weeks 3 and 4"
+git push -u origin feature/person4-week3-week4-frontend
+```
