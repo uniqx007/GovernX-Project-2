@@ -147,7 +147,7 @@ class DataNormalizer:
             'RDS-Instance': ResourceType.DATABASE,
             'SecurityGroup': ResourceType.FIREWALL,
             'IAM-User': ResourceType.IAM_USER,
-            'IAM-RoleIAM-Role': ResourceType.IAM_ROLE,
+            'IAM-Role': ResourceType.IAM_ROLE,
         }
         
         service = aws_finding.get('service', 'other').lower()

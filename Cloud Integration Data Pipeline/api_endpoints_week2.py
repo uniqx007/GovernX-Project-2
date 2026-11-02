@@ -22,6 +22,23 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("GovernX API started")
+    # Preload caches from existing audit files for instant demonstration
+    try:
+        import os
+        if os.path.exists('normalized_findings.json'):
+            with open('normalized_findings.json', 'r', encoding='utf-8') as f:
+                findings_cache['audit_latest'] = json.load(f)
+                audit_cache['audit_latest'] = {'provider': 'aws', 'audit_id': 'audit_latest'}
+        if os.path.exists('normalized_resources.json'):
+            with open('normalized_resources.json', 'r', encoding='utf-8') as f:
+                resources_cache['audit_latest'] = json.load(f)
+        if os.path.exists('aggregated_findings.json'):
+            with open('aggregated_findings.json', 'r', encoding='utf-8') as f:
+                agg = json.load(f)
+                aggregated_findings_cache['audit_latest'] = agg.get('aggregated_findings', [])
+        logger.info("Audit caches preloaded successfully for demonstration")
+    except Exception as e:
+        logger.warning(f"Cache preloading error: {e}")
     yield
     logger.info("GovernX API stopped")
 
@@ -255,7 +272,7 @@ async def get_deduplication_statistics() -> Dict[str, Any]:
     return {
         'total_raw_findings': total_raw,
         'total_unique_findings': total_unique,
-        'deduplication_ratio': (1 - (total_unique / total_raw) * 100) if total_raw > 0 else 0,
+        'deduplication_ratio': round((1 - (total_unique / total_raw)) * 100, 2) if total_raw > 0 else 0.0,
         'timestamp': datetime.now().isoformat()
     }
 
@@ -310,14 +327,25 @@ async def execute_compliance_checks(audit_id: str, audit_info: Dict):
         
         # Run compliance checks on resources
         for resource in resources:
+            cfg = dict(resource.get('configuration', {}))
+            res_id = resource.get('resource_id', 'unknown')
+            cfg['InstanceId'] = res_id
+            cfg['Name'] = res_id
+            cfg['DBInstanceIdentifier'] = res_id
+            cfg['resource_id'] = res_id
+            
             if resource.get('service') == 'ec2':
                 # Run EC2 checks
-                checker.check_ec2_imdsv2(resource.get('configuration', {}))
-                checker.check_ec2_monitoring(resource.get('configuration', {}))
+                checker.check_ec2_imdsv2(cfg)
+                checker.check_ec2_monitoring(cfg)
             elif resource.get('service') == 's3':
                 # Run S3 checks
-                checker.check_s3_public_access_blocked(resource.get('configuration', {}))
-                checker.check_s3_encryption(resource.get('configuration', {}))
+                checker.check_s3_public_access_blocked(cfg)
+                checker.check_s3_encryption(cfg)
+            elif resource.get('service') == 'rds':
+                # Run RDS checks
+                checker.check_rds_encryption(cfg)
+                checker.check_rds_backup_retention(cfg)
         
         # Get results
         results = checker.get_results()

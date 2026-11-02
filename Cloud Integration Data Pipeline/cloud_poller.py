@@ -399,5 +399,5 @@ if __name__ == "__main__":
     print("POLLING SUMMARY")
     print("=" * 70)
     for result in results:
-        status_icon = "✅" if result.status == 'success' else "⚠️" if result.status == 'cached' else "❌"
+        status_icon = "[OK]" if result.status == 'success' else "[CACHED]" if result.status == 'cached' else "[ERROR]"
         print(f"{status_icon} {result.provider.upper()}/{result.region}: {result.findings_count} findings, {result.resources_count} resources")
