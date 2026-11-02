@@ -1,0 +1,20 @@
+# Python cache and byte-compiled files
+__pycache__/
+*.py[cod]
+*.class
+*.pyc
+
+# Local cache & virtual environments
+.cache/
+.venv/
+env/
+venv/
+ENV/
+
+# Logs and runtime databases
+*.log
+*.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db

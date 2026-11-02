@@ -1,68 +1,87 @@
-# GovernX: Cloud Integration & Data Pipeline (Week 1 & 2)
+# GovernX: Cloud Integration & Governance Pipeline (Weeks 1 - 4)
 
-This folder contains the foundational **Backend & Cloud Integration Pipeline** for the GovernX Compliance Engine. It is responsible for continuously polling cloud environments, extracting security configurations, normalizing the data, validating compliance, aggregating findings, and serving it via a REST API to the rest of the application.
+This repository contains the complete **Backend, Cloud Integration & Governance Data Pipeline** for the GovernX NIST CSF 2.0 Compliance Engine (Person 1: Backend Lead). 
 
-## Architecture & Modules
-
-The pipeline is composed of core modules working in tandem:
-
-### 1. `aws_connector.py` (The Extraction Engine)
-Actively polls and audits cloud infrastructure to detect misconfigurations and security vulnerabilities across AWS services (EC2, S3, RDS, IAM, VPC).
-* **Mock Integration:** Seamlessly integrated with `Moto` to automatically spin up a localized mock AWS environment containing intentionally vulnerable resources for safe, cost-free testing. (As issue with real data integration was coming)
-
-### 2. `cloud_poller.py` (The Orchestrator)
-A multi-cloud, multi-region orchestrator that manages the execution of cloud connectors.
-* Handles caching mechanisms, retry logic, and concurrent polling cycles.
-
-### 3. `data_normalizer.py` (The Transformer)
-Takes the raw, service-specific output from the cloud connectors and standardizes it into a universal JSON format.
-* Performs data quality validation, normalizes severity levels, and outputs clean structured data (`normalized_findings.json` & `normalized_resources.json`).
-
-### 4. `aws_compliance_checks.py` (The NIST Validator)
-A library containing 20+ automated compliance checks (EC2, S3, RDS, IAM, VPC) directly mapped to NIST CSF 2.0 controls.
-* Takes normalized data and validates it against security frameworks, producing pass/fail compliance scores.
-
-### 5. `finding_aggregator.py` (The Deduplicator)
-Aggregates and deduplicates findings from multiple clouds and audit runs.
-* Solves the issue of duplicate findings polluting the dashboard by merging duplicate resources and generating intelligent compliance statistics.
-
-### 6. `api_endpoints_week2.py` (The API Gateway v2)
-A modern, asynchronous FastAPI application that exposes the backend capabilities.
-* Triggers on-demand background audits and compliance validations via `POST /api/v2/audit/{audit_id}/run-compliance-checks`.
-* Serves the aggregated findings and statistics via REST endpoints.
+It continuously polls cloud environments, extracts security configurations, normalizes data, validates compliance against 24 NIST CSF controls, deduplicates findings, tracks supply chain risk, enforces organizational policies, and exposes a hardened REST API via a unified production application.
 
 ---
 
-## 🚀 Getting Started
+## Architecture & Complete Module Roadmap
 
-### Prerequisites
-Make sure you have the required dependencies installed:
-```bash
-  pip install -r requirements.txt
-```
+### 📦 Week 1: Foundation & Data Acquisition
+* **[`aws_connector.py`](aws_connector.py)**: Cloud infrastructure scanner across EC2, S3, RDS, IAM, and VPC. Built-in Moto emulation seeds an isolated AWS environment with realistic misconfigurations.
+* **[`cloud_poller.py`](cloud_poller.py)**: Multi-region orchestrator managing polling schedules, exponential retry backoff, and local TTL caching (`./.cache/`).
+* **[`data_normalizer.py`](data_normalizer.py)**: Converts vendor-specific raw outputs into universal GovernX dataclasses (`ResourceType`, `ServiceType`, `Severity`).
+* **[`api_endpoints.py`](api_endpoints.py)**: Initial REST API v1 (`/api/v1/...`).
 
-### 1. Running the Core Pipeline Manually
-You can test the extraction and normalizer directly from your terminal:
-```bash
-  python cloud_poller.py
-  python data_normalizer.py
-```
+### 🛡️ Week 2: Compliance & Finding Deduplication
+* **[`aws_compliance_checks.py`](aws_compliance_checks.py)**: 24 automated compliance check rules mapped to NIST CSF categories (EBS encryption, IMDSv2, S3 Public Access, RDS KMS, IAM MFA, etc.).
+* **[`finding_aggregator.py`](finding_aggregator.py)**: MD5-hash deduplicator (`resource_id + finding_type + service`) tracking `first_seen`, `last_seen`, and occurrence counts.
+* **[`api_endpoints_week2.py`](api_endpoints_week2.py)**: Extended REST API v2 (`/api/v2/...`).
 
-### 2. Running the Compliance & Aggregation Engine (Week 2)
-Test the deduplication and NIST compliance validations:
-```bash
-  python aws_compliance_checks.py
-  python finding_aggregator.py
-```
+### 🏛️ Week 3: NIST CSF 2.0 Govern Function (GV)
+* **[`supply_chain_connector.py`](supply_chain_connector.py)**: Third-party vendor risk assessment, security certification tracking (SOC2 / ISO27001), concentration risk analysis, and weighted scoring (`GV.SC`).
+* **[`organizational_policy_engine.py`](organizational_policy_engine.py)**: Enterprise policy parser and violation evaluator cross-referencing cloud findings against corporate security mandates (`GV.PO`).
+* **[`governance_data_collector.py`](governance_data_collector.py)**: Board oversight scorecard, cyber insurance parameters, strategic initiatives, and risk appetite breach detection (`GV.OC`, `GV.OV`, `GV.RM`).
+* **[`stakeholder_registry.py`](stakeholder_registry.py)**: Risk ownership assignment per cloud domain, SLA escalation matrix, and alert routing (`GV.RR`).
 
-### 3. Running the API Server (Week 2)
-To expose the pipeline to the rest of the GovernX ecosystem, start the upgraded v2 API server:
-```bash
-  python api_endpoints_week2.py
-```
-Once the server shows `GovernX API started`, open the web browser and navigate to the interactive testing interface:
-**[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**
-
-From this Swagger UI, you can manually trigger compliance audits, get aggregated duplicates, and query findings.
+### 🚀 Week 4: Production Hardening & Optimization
+* **[`api_optimization.py`](api_optimization.py)**: Thread-safe in-memory TTL Cache, sliding-window rate limiting, and structured pagination.
+* **[`security_hardening.py`](security_hardening.py)**: Zero-trust API Key and JWT authentication, Role-Based Access Control (RBAC), security audit logging, and data masking.
+* **[`error_handling.py`](error_handling.py)**: Domain exception hierarchy, standardized error response envelopes, and `/health/live` & `/health/ready` probes.
+* **[`deployment_config.py`](deployment_config.py)**: Production settings management, CORS configurations, and secrets handling.
+* **[`governx_app.py`](governx_app.py)**: **The Master Production Application** uniting Weeks 1 - 4 into a single, cohesive, fully functioning FastAPI service.
 
 ---
+
+## ⚡ Quickstart Guide
+
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Run the Unified Production Application
+Start the master application wiring Weeks 1, 2, 3, and 4 together:
+```bash
+python governx_app.py
+```
+Open your browser and navigate to the interactive Swagger UI:
+👉 **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**
+
+---
+
+## 🔗 Key API Route Reference
+
+| Category | Method & Endpoint | Description |
+| :--- | :--- | :--- |
+| **System** | `GET /health/live` | Container / Kubernetes Liveness Probe |
+| **System** | `GET /health/ready` | Readiness Probe verifying 6 core subsystems |
+| **Week 1** | `POST /api/v1/audit/trigger` | Trigger Moto AWS security audit & normalization |
+| **Week 1** | `GET /api/v1/audit/{id}/findings` | Query normalized findings with filters & pagination |
+| **Week 2** | `GET /api/v2/compliance/checks` | List 24 automated compliance checks mapped to NIST CSF |
+| **Week 2** | `POST /api/v2/audit/{id}/run-compliance-checks` | Run compliance checks and get 0-100% score |
+| **Week 2** | `GET /api/v2/findings/aggregated` | Retrieve deduplicated findings across all historical audits |
+| **Week 2** | `GET /api/v2/findings/deduplication-stats` | Retrieve deduplication ratio & occurrence statistics |
+| **Week 3** | `GET /api/v3/govern/supply-chain/summary` | Vendor risk summary, weighted scores & concentration risk |
+| **Week 3** | `GET /api/v3/govern/policies` | Active enterprise security policies & mandatory rules |
+| **Week 3** | `GET /api/v3/govern/policies/compliance-summary` | Policy violation scorecard and compliance percentage |
+| **Week 3** | `GET /api/v3/govern/governance/scorecard` | Board governance overview & risk appetite breach analysis |
+| **Week 3** | `GET /api/v3/govern/stakeholders` | Risk ownership registry and SLA escalation matrix |
+| **Week 4** | `GET /api/v4/cache/stats` | In-memory TTL cache hit/miss performance metrics |
+
+---
+
+## 🧪 Running Component Smoke Tests
+
+Each module is standalone and testable directly from the terminal:
+```bash
+python supply_chain_connector.py      # Test vendor risk scoring (GV.SC)
+python organizational_policy_engine.py # Test policy violation evaluator (GV.PO)
+python governance_data_collector.py   # Test board scorecard & risk appetite (GV.OV)
+python stakeholder_registry.py        # Test risk owners & SLA escalation (GV.RR)
+python api_optimization.py            # Test TTL cache & rate limiter
+python security_hardening.py          # Test RBAC, tokens & audit logger
+python error_handling.py              # Test error envelopes & health probes
+python deployment_config.py           # Test configuration management
+```

@@ -55,8 +55,10 @@ class FindingAggregator:
     
     def generate_finding_hash(self, finding: Dict[str, Any]) -> str:
         """Generate unique hash for finding"""
-        # Hash based on: resource_id + finding_type + service
-        key = f"{finding['resource_id']}_{finding['finding_type']}_{finding['service']}"
+        res_id = finding.get('resource_id', 'unknown')
+        ftype = finding.get('finding_type', 'unknown')
+        svc = finding.get('service') or finding.get('service_type', 'unknown')
+        key = f"{res_id}_{ftype}_{svc}"
         return hashlib.md5(key.encode()).hexdigest()[:12]
     
     def add_finding(self, finding: Dict[str, Any], source: str = 'unknown') -> str:

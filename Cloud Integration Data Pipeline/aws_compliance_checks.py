@@ -336,7 +336,10 @@ class ComplianceChecker:
         instance_id = instance.get('InstanceId') or instance.get('resource_id', 'unknown')
         
         metadata_options = instance.get('MetadataOptions', {})
-        passed = metadata_options.get('HttpTokens') == 'required' or instance.get('Encrypted', False)
+        if isinstance(metadata_options, dict):
+            passed = metadata_options.get('HttpTokens') == 'required' or instance.get('Encrypted', False)
+        else:
+            passed = instance.get('Encrypted', False)
         
         result = ComplianceResult(
             check_id=check.check_id,
@@ -356,7 +359,11 @@ class ComplianceChecker:
         check = AWSComplianceChecks.get_check('ec2_monitoring_enabled')
         instance_id = instance.get('InstanceId') or instance.get('resource_id', 'unknown')
         
-        passed = instance.get('Monitoring', {}).get('State') == 'enabled' or instance.get('Monitoring') == 'enabled'
+        mon = instance.get('Monitoring', {})
+        if isinstance(mon, dict):
+            passed = mon.get('State') == 'enabled'
+        else:
+            passed = str(mon).lower() == 'enabled'
         
         result = ComplianceResult(
             check_id=check.check_id,
@@ -377,10 +384,14 @@ class ComplianceChecker:
         instance_id = instance.get('InstanceId') or instance.get('resource_id', 'unknown')
         
         all_encrypted = True
-        for mapping in instance.get('BlockDeviceMappings', []):
-            if not mapping['Ebs'].get('Encrypted', False):
-                all_encrypted = False
-                break
+        mappings = instance.get('BlockDeviceMappings', [])
+        if isinstance(mappings, list):
+            for mapping in mappings:
+                if isinstance(mapping, dict):
+                    ebs = mapping.get('Ebs', {})
+                    if isinstance(ebs, dict) and not ebs.get('Encrypted', False):
+                        all_encrypted = False
+                        break
         
         result = ComplianceResult(
             check_id=check.check_id,
