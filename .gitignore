@@ -1,20 +1,23 @@
-# Python cache and byte-compiled files
-__pycache__/
-*.py[cod]
-*.class
-*.pyc
-
-# Local cache & virtual environments
+# Dependencies & Environments
+node_modules
+dist
+.env
+.env.local
 .cache/
 .venv/
 env/
 venv/
 ENV/
 
-# Logs and runtime databases
+# Python cache & compiled files
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Logs & databases
 *.log
 *.sqlite3
 
-# OS generated files
+# OS files
 .DS_Store
 Thumbs.db
